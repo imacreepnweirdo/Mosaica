@@ -1,0 +1,8 @@
+pillow
+numpy
+scipy
+
+# Phase 2+: pretrained CNN embeddings (mosaica.models). Only needed if you
+# import mosaica.models — color/photo modes work without these.
+torch
+torchvision
