@@ -22,6 +22,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 from scipy.spatial import cKDTree
 
+from mosaica.codebook import cache as feature_cache
+
 
 class FeatureExtractor(ABC):
     """Turns images into feature vectors used for similarity search."""
@@ -63,9 +65,28 @@ class NearestNeighborMatcher:
         self._tree = None
         self._n_tiles = 0
 
-    def fit(self, tiles):
-        """tiles: list of PIL Images (the codebook, already tile-sized)."""
-        features = self.feature_extractor.extract_batch(tiles)
+    def fit(self, tiles, cache_dir=None, cache_key=None):
+        """
+        tiles: list of PIL Images (the codebook, already tile-sized).
+
+        cache_dir/cache_key: optional — if both are given, extracted features
+        are cached to disk under that key and reused on the next run instead
+        of being recomputed. Cheap extractors (mean color) don't need this;
+        expensive ones (a CNN forward pass per image) benefit a lot.
+        """
+
+        features = None
+
+        if cache_dir and cache_key:
+            features = feature_cache.load(cache_dir, cache_key)
+            if features is not None:
+                print(f"[matcher] loaded cached features ({len(tiles)} tiles)")
+
+        if features is None:
+            features = self.feature_extractor.extract_batch(tiles)
+            if cache_dir and cache_key:
+                feature_cache.save(cache_dir, cache_key, features)
+
         self._tree = cKDTree(features)
         self._n_tiles = len(tiles)
         self.avoidance.reset()

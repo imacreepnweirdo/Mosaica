@@ -22,6 +22,8 @@ def main():
 
     # photo mode only
     parser.add_argument("--codebook-dir", default=None, help="Folder of images to use as tiles (photo mode)")
+    parser.add_argument("--matcher", choices=["color", "embedding"], default="color",
+                         help="How to match tiles: mean color (fast) or pretrained-CNN embeddings (slower, smarter)")
     parser.add_argument("--avoid-repeat-within", type=int, default=6)
     parser.add_argument("--cache-dir", default="cache")
     parser.add_argument("--no-cache", action="store_true")
@@ -36,6 +38,7 @@ def main():
         tile_height=args.tile_height,
         enlargement=args.enlargement,
         codebook_dir=args.codebook_dir,
+        matcher=args.matcher,
         avoid_repeat_within=args.avoid_repeat_within,
         cache_dir=args.cache_dir,
         use_cache=not args.no_cache,
